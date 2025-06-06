@@ -1,23 +1,39 @@
-import sys
-import os
 from AdventureGame import AdventureGame
+from time import sleep
 
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: python main.py <prompt_file>")
-        sys.exit(1)
+def runGame():
+	game = AdventureGame()
+	game.setNumberOfLives(3)
 
-    prompt_file = sys.argv[1]
-    if not os.path.isfile(prompt_file):
-        print(f"Error: The file '{prompt_file}' does not exist or cannot be opened.")
-        sys.exit(1)
+	game.outputIntro()
+	game.getPlayerName()
+	game.waitUntilUserIsReady()
 
-    name = input("Enter your name: ")
-    total_stages = 4
-    lives = min(3, total_stages)
+	while(True):
+		game.outputNewRealmPrompt()
 
-    game = AdventureGame(prompt_file, name, lives)
-    game.play()
+		for stage in range(game.numberOfStages):
+			stageInfo = game.fetchCurrentStage(stage)
+			game.outputPlayerStatus()
+			game.outputPrompt(stageInfo)
+			choice = game.getUserChoice()
+			winner = game.outputResult(stageInfo, choice)
 
-if __name__ == "__main__":
-    main()
+			if (winner == False):
+				game.loseHealth(2)
+
+			if(game.playerIsDead()):
+				game.outputPlayerStatus()
+				restart = game.outputDeadPlayerPrompt()
+				if (restart):
+					runGame()
+				else:
+					exit()
+
+		game.outputPlayerStatus()
+		game.resetPlayerHealth()
+		game.incrementScore()
+		game.outputSuccessPrompt()
+
+if __name__ == '__main__':
+	runGame()
